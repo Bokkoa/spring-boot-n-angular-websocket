@@ -32,8 +32,11 @@
             </ul>
         </div>
     
-        <div class="card-body" 
-            *ngIf="connected"
+        <!-- scrollchat and scrolltop for always stay in last message -->
+        <div #scrollChat 
+             [scrollTop]="scrolltop"  
+             class="card-body" 
+             *ngIf="connected"
              style="overflow-y: scroll; height: 400px;">
 
 
@@ -61,6 +64,7 @@
                     <input type="text" 
                            class="form-control" 
                            [(ngModel)]="message.text"
+                           (keyup)="writingEvent()"
                            placeholder="send a message!" 
                            name="text">
                 </div>
@@ -72,6 +76,13 @@
                     </button>
                 </div>
             </form>
+
+
+
+            <div>
+                {{userWriting}}
+            </div>
+
         </div>
     </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 
 import { Client } from '@stomp/stompjs';
 import * as SockJS from 'sockjs-client';
@@ -15,7 +15,11 @@ export class ChatComponent implements OnInit {
   public connected: boolean = false;
   public message: Message = new Message();
   public messages: Message[] = [];
+  public userWriting: string;
 
+  // scroll always on bottom
+  @ViewChild('scrollChat') comment : ElementRef ;  
+  scrolltop:null|number=null;
 
   constructor() { }
 
@@ -28,6 +32,8 @@ export class ChatComponent implements OnInit {
     this.stompClient.onConnect = (frame) => {
       console.log("Connected: " + this.stompClient.connected + ' : ' + frame );
       this.connected = true;
+
+      // START LISTENERS
 
       this.stompClient.subscribe('/chat/message-received', e => {
         let messageFromSocket:Message = JSON.parse(e.body) as Message; 
@@ -43,8 +49,20 @@ export class ChatComponent implements OnInit {
 
         messageFromSocket.date = new Date(messageFromSocket.date);
         this.messages.push( messageFromSocket );
+        // updating scrolltop
+        this.scrolltop = this.comment.nativeElement.scrollHeight
         console.log(messageFromSocket);
       });
+
+
+      this.stompClient.subscribe('/chat/user-writing', e => {
+        this.userWriting = e.body;  // bokkoa is writing....
+
+        // reseting writing
+        setTimeout(() => this.userWriting = '', 3000);
+      });
+
+      // END LISTENERS
 
       this.message.type = 'NEW_USER';
       this.stompClient.publish({
@@ -80,6 +98,15 @@ export class ChatComponent implements OnInit {
     });
     // reset messae
     this.message.text = '';
+  }
+
+
+
+  writingEvent():void{
+    this.stompClient.publish({
+      destination: '/app/writing', // app is a destination prefix
+      body: this.message.username
+    });
   }
 
 }

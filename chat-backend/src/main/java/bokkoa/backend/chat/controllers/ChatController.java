@@ -33,4 +33,10 @@ public class ChatController {
         return message;
     }
 
+
+    @MessageMapping("/writing") // termination for message received from frontend
+    @SendTo("/chat/user-writing") // route for action to other clients subscribed
+    public String userIsWriting(String username){
+        return username.concat(" is writing...");
+    }
 }
