@@ -1,1 +1,77 @@
-<p>chat works!</p>
+
+<div class="container">
+
+    <div class="card mx-4 my-4">
+        <div class="card-header">
+            <ul class="nav nav-pills card-header-pills ">
+                <li class="nav-item mx-2">
+                    <input [(ngModel)]="message.username"
+                            class="form-control"
+                            *ngIf="!connected"
+                            placeholder="Set your username"
+                            name="username"
+                            type="text">
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-success" 
+                            *ngIf="!connected"
+                            [disabled]="!message.username"
+                            (click)="connect()"
+                            type="button">
+                        Connect
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-warning" 
+                            *ngIf="connected"
+                            (click)="disconnect()"
+                            type="button">
+                        Close chat
+                    </button>
+                </li>
+            </ul>
+        </div>
+    
+        <div class="card-body" 
+            *ngIf="connected"
+             style="overflow-y: scroll; height: 400px;">
+
+
+             <!-- CHAT CONTENT -->
+                <ul class="list-group list-group-flush">
+                    <li *ngFor="let m of messages"
+                        class="list-group-item list-group-item-light">
+                        <span *ngIf="m.type == 'NEW_USER'">
+                            {{m.date | date:'shortTime'}} @ {{m.text}} 
+                            <span [ngStyle]="{'color': message.color}"> {{m.username}} </span>
+                        </span>
+                        <span *ngIf="m.type == 'NEW_MESSAGE'">
+                            {{m.date | date:'shortTime'}} 
+                            <span [ngStyle]="{'color': message.color}"> {{m.username}} </span> {{m.text}}
+                        </span>
+                    </li>
+                </ul>
+
+        </div>
+        
+        <div *ngIf="connected" 
+             class="card-footer">
+            <form class="row">
+                <div class="col-4 form-group mx-3">
+                    <input type="text" 
+                           class="form-control" 
+                           [(ngModel)]="message.text"
+                           placeholder="send a message!" 
+                           name="text">
+                </div>
+                <div class="col-4">
+                    <button class="btn btn-primary" 
+                            (click)="sendMessage()"
+                            type="submit">
+                        Send
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
