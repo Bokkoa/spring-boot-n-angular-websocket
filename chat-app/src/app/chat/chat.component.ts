@@ -16,12 +16,15 @@ export class ChatComponent implements OnInit {
   public message: Message = new Message();
   public messages: Message[] = [];
   public userWriting: string;
+  public clientId: string;
 
   // scroll always on bottom
   @ViewChild('scrollChat') comment : ElementRef ;  
   scrolltop:null|number=null;
 
-  constructor() { }
+  constructor() {
+    this.clientId = 'id-' + new Date().getUTCMilliseconds() + '-' + Math.random().toString(36).substring(2);
+   }
 
   ngOnInit(): void {
     this.stompClient = new Client();
@@ -62,7 +65,21 @@ export class ChatComponent implements OnInit {
         setTimeout(() => this.userWriting = '', 3000);
       });
 
+
+      this.stompClient.subscribe(`/chat/get-history/${this.clientId}`, e => { 
+        const history =  JSON.parse(e.body) as Message[];
+        // formatting messages from oldest to newest
+        // formatting also date
+        this.messages = history.map( m => { 
+                                      m.date =  new Date( m.date );
+                                      return m;
+                                    }).reverse();
+      });
+
       // END LISTENERS
+
+      // emmiting history
+      this.stompClient.publish({ destination: '/app/history', body: this.clientId});
 
       this.message.type = 'NEW_USER';
       this.stompClient.publish({
@@ -76,7 +93,8 @@ export class ChatComponent implements OnInit {
     this.stompClient.onDisconnect = (frame) => {
       console.log("Disconnected: " + !this.stompClient.connected + ' : ' + frame );
       this.connected = false;
-
+      this.messages = [];
+      this.message =  new Message();
     }
 
 
